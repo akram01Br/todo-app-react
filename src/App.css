@@ -1,3 +1,9 @@
+body{
+font-family: Smooch !important;
+
+}
+
+
 .App {
   text-align: center;
 }
@@ -36,3 +42,42 @@
     transform: rotate(360deg);
   }
 }
+.iconButton{
+  transition: all 0.2s !important;;
+}
+.iconButton:hover {
+  background-color:#c5c5c5  !important;
+  box-shadow: 0px 7px 7px rgba(0, 0, 0, 0.4);
+}
+.todoCard:hover{
+padding-bottom: 20px;
+padding-top: 20px;
+  box-shadow: 0px 7px 7px rgba(0, 0, 0, 0.4);
+
+}
+.todoCard{
+  transition: all 0.2s !important;;
+}
+/* ====== CUSTOM FONTS============*/
+@font-face {
+  font-family: Smooch;
+  src: url("/public/fonts/SmoochSans-Bold.ttf");
+font-weight: Bold;
+}
+@font-face {
+  font-family: Smooch;
+  src: url("/public/fonts/SmoochSans-Thin.ttf");
+font-weight: Thin;
+}
+@font-face {
+  font-family: Smooch;
+  src: url("/public/fonts/SmoochSans-Medium.ttf");
+  font-weight: Medium;
+}
+@font-face {
+  font-family: Smooch;
+  src: url("/public/fonts/SmoochSans-Black.ttf");
+font-weight: Black;
+}
+
+/* ====== CUSTOM FONTS============*/
