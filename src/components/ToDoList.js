@@ -14,50 +14,123 @@ import FormatAlignLeftIcon from "@mui/icons-material/FormatAlignLeft";
 import FormatAlignCenterIcon from "@mui/icons-material/FormatAlignCenter";
 import FormatAlignRightIcon from "@mui/icons-material/FormatAlignRight";
 import FormatAlignJustifyIcon from "@mui/icons-material/FormatAlignJustify";
-
+// DIALOG IMPORT
+import Dialog from "@mui/material/Dialog";
+import DialogActions from "@mui/material/DialogActions";
+import DialogContent from "@mui/material/DialogContent";
+import DialogContentText from "@mui/material/DialogContentText";
+import DialogTitle from "@mui/material/DialogTitle";
 // outhers
 
 import { v4 as uuidv4 } from "uuid";
 
-import { useContext, useState, useEffect } from "react";
+import { useContext, useState, useEffect, useMemo } from "react";
 import { TodosContext } from "../contexts/todosContext";
+import { ToastContext } from "../contexts/ToastContext";
 import Grid from "@mui/material/Grid";
 import TextField from "@mui/material/TextField";
 //  Components
 import ToDo from "./ToDo";
 
 export default function TodoList() {
+  console.log("re render");
   const { todos, setToDos } = useContext(TodosContext);
-
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [dialogTodo, setDialogTodo] = useState("");
   const [titleInput, setTitleInput] = useState("");
   const [displayedTodosType, setDisplayedTodosType] = useState("all");
+
+  const {showHideToast} = useContext(ToastContext)
+  
+  const [showupdateDialog, setShowUpdateDialog] = useState(false);
+
+
   // filteration arrays
-  const completedTodos = todos.filter((t) => {
-    return t.isCompleted;
-  });
-  const notCompletedTodos = todos.filter((t) => {
-    return !t.isCompleted;
-  });
+
+  const completedTodos = useMemo(() => {
+    return todos.filter((t) => {
+      console.log("calling completed Todos");
+      return t.isCompleted;
+    });
+  }, [todos]);
+  const notCompletedTodos = useMemo(() => {
+    return todos.filter((t) => {
+      console.log("calling  Not completed Todos");
+
+      return !t.isCompleted;
+    });
+  }, [todos]);
+
   let todoToBeRendered = todos;
   if (displayedTodosType == "completed") {
     todoToBeRendered = completedTodos;
-  }else if (displayedTodosType == "non-completed")
-  {
-    todoToBeRendered =notCompletedTodos
-  }else{
-    todoToBeRendered = todos
+  } else if (displayedTodosType == "non-completed") {
+    todoToBeRendered = notCompletedTodos;
+  } else {
+    todoToBeRendered = todos;
   }
-  const todosJSX = todoToBeRendered.map((t) => {
-    return <ToDo key={t.id} todo={t} />;
-  });
 
   useEffect(() => {
     console.log("calling use effect");
     const storageTodos = JSON.parse(localStorage.getItem("todos")) ?? [];
     setToDos(storageTodos);
   }, []);
+  //handelers
+
+  function openUpdateDialog(todo) {
+    setDialogTodo(todo);
+    setShowUpdateDialog(true);
+  }
+  function handleUpdateClose() {
+    setShowUpdateDialog(false);
+  }
+
+  function handleUpdateConfirm() {
+    const updatedTodos = todos.map((t) => {
+      if (t.id == dialogTodo.id) {
+        return {
+          ...t,
+          title: dialogTodo.title,
+          details: dialogTodo.details,
+        };
+      } else return t;
+    });
+    setToDos(updatedTodos);
+    setShowUpdateDialog(false);
+    localStorage.setItem("todos", JSON.stringify(updatedTodos));
+        showHideToast("updated")
+
+  }
+  const todosJSX = todoToBeRendered.map((t) => {
+    return (
+      <ToDo
+        key={t.id}
+        todo={t}
+        showDelete={openDeleteDialog}
+        showUpdate={openUpdateDialog}
+      />
+    );
+  });
+
+  function openDeleteDialog(todo) {
+    setDialogTodo(todo);
+    setShowDeleteDialog(true);
+  }
+  function handleDeleteDialogClose() {
+    setShowDeleteDialog(false);
+  }
   function changeDisplayedType(e) {
     setDisplayedTodosType(e.target.value);
+  }
+  function handleDeleteConfirm() {
+    console.log(dialogTodo);
+    const updatedTodos = todos.filter((t) => {
+      return t.id != dialogTodo.id;
+    });
+    setToDos(updatedTodos);
+    localStorage.setItem("todos", JSON.stringify(updatedTodos));
+    setShowDeleteDialog(false);
+    showHideToast("Task deleted successfully")
   }
   function handleAddClick() {
     const newTodo = {
@@ -70,97 +143,170 @@ export default function TodoList() {
     setToDos(updatedTodos);
     localStorage.setItem("todos", JSON.stringify(updatedTodos));
     setTitleInput("");
+    showHideToast("Task added successfully ")
   }
 
   // const storageTodos = JSON.parse(localStorage.getItem("todos"));
   // setToDos(storageTodos);
   return (
-    <Container maxWidth="sm">
-      <Card sx={{ minWidth: 275 }} style ={{
-        maxHeight: "80vh",
-        overflow: "scroll",
+    <>
+      {/*===== DELETE DIALOG */}
+      <Dialog
+        onClose={handleDeleteDialogClose}
+        open={showDeleteDialog}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+        role="alertdialog"
+      >
+        <DialogTitle id="alert-dialog-title">
+          {"Are you sure you want to delete this post?"}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            You can't undo this action after deleting this post.{" "}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleDeleteDialogClose}>Cancel</Button>
+          <Button onClick={handleDeleteConfirm}>Delete Post</Button>
+        </DialogActions>
+      </Dialog>
+      {/*=====> DELETE DIALOG */}
 
+      <Container maxWidth="sm">
+        <Card
+          sx={{ minWidth: 275 }}
+          style={{
+            maxHeight: "80vh",
+            overflow: "scroll",
+          }}
+        >
+          <CardContent>
+            <Typography variant="h2" style={{ fontWeight: "bold" }}>
+              To Do List
+              <Divider />
+            </Typography>
 
-      }}>
-        <CardContent>
-          <Typography variant="h2" style={{ fontWeight: "bold" }}>
-            To Do List
-            <Divider />
-          </Typography>
-
-          {/* FILTER Buttons */}
-          <ToggleButtonGroup
-            style={{ direction: "ltr", marginTop: "30px" }}
-            value={displayedTodosType}
-            exclusive
-            onChange={changeDisplayedType}
-            aria-label="text alignment"
-            color="primary"
-          >
-            <ToggleButton value="non-completed" aria-label="right aligned">
-              Unfinished
-            </ToggleButton>
-            <ToggleButton value="completed" aria-label="centered">
-              Finished
-            </ToggleButton>
-            <ToggleButton value="all" aria-label="left aligned">
-              All Task
-            </ToggleButton>
-          </ToggleButtonGroup>
-
-          {/* ======= FILTER Buttons */}
-
-          {/* ALL TODOS */}
-          {todosJSX}
-
-          {/*========= ALL TODOS */}
-
-          {/* =INPUT  + ADD BUTTON====== */}
-          <Grid container style={{ marginTop: "20px" }} spacing={2}>
-            <Grid
-              size={4}
-              sx={{
-                display: "flex",
-                justifyContent: "space-around",
-                alignItems: "center",
-              }}
+            {/* FILTER Buttons */}
+            <ToggleButtonGroup
+              style={{ direction: "ltr", marginTop: "30px" }}
+              value={displayedTodosType}
+              exclusive
+              onChange={changeDisplayedType}
+              aria-label="text alignment"
+              color="primary"
             >
-              <Button
-                variant="contained"
-                style={{ width: "100%", height: "100%" }}
-                onClick={() => {
-                  handleAddClick();
+              <ToggleButton value="non-completed" aria-label="right aligned">
+                Unfinished
+              </ToggleButton>
+              <ToggleButton value="completed" aria-label="centered">
+                Finished
+              </ToggleButton>
+              <ToggleButton value="all" aria-label="left aligned">
+                All Task
+              </ToggleButton>
+            </ToggleButtonGroup>
+
+            {/* ======= FILTER Buttons */}
+
+            {/* ALL TODOS */}
+            {todosJSX}
+
+            {/*========= ALL TODOS */}
+
+            {/* =INPUT  + ADD BUTTON====== */}
+            <Grid container style={{ marginTop: "20px" }} spacing={2}>
+              <Grid
+                size={4}
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-around",
+                  alignItems: "center",
                 }}
-                disabled={titleInput.length==0}
               >
-                Add Task
-              </Button>
-            </Grid>
-            <Grid
-              size={8}
-              sx={{
-                display: "flex",
-                justifyContent: "space-around",
-                alignItems: "center",
-              }}
-            >
-              {" "}
-              <TextField
-                style={{ width: "100%" }}
-                id="outlined-basic"
-                label="Task Name"
-                variant="outlined"
-                value={titleInput}
-                onChange={(e) => {
-                  setTitleInput(e.target.value);
+                <Button
+                  variant="contained"
+                  style={{ width: "100%", height: "100%" }}
+                  onClick={() => {
+                    handleAddClick();
+                  }}
+                  disabled={titleInput.length == 0}
+                >
+                  Add Task
+                </Button>
+              </Grid>
+              <Grid
+                size={8}
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-around",
+                  alignItems: "center",
                 }}
-              />
+              >
+                {" "}
+                <TextField
+                  style={{ width: "100%" }}
+                  id="outlined-basic"
+                  label="Task Name"
+                  variant="outlined"
+                  value={titleInput}
+                  onChange={(e) => {
+                    setTitleInput(e.target.value);
+                  }}
+                />
+              </Grid>
             </Grid>
-          </Grid>
-          {/* =====INPUT  + ADD BUTTON====== */}
-        </CardContent>
-        <CardActions></CardActions>
-      </Card>
-    </Container>
+            {/* =====INPUT  + ADD BUTTON====== */}
+          </CardContent>
+          <CardActions></CardActions>
+        </Card>
+      </Container>
+      {/* UPDATE DIALOG */}
+      <Dialog
+        onClose={handleUpdateClose}
+        open={showupdateDialog}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+        role="alertdialog"
+      >
+        <DialogTitle id="alert-dialog-title">
+          {"Are you sure you want to update this post?"}
+        </DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            required
+            margin="dense"
+            id="name"
+            name="email"
+            label="Task Name"
+            fullWidth
+            variant="standard"
+            value={dialogTodo.title }
+            onChange={(e) => {
+              setDialogTodo({ ...dialogTodo, title: e.target.value });
+            }}
+          />
+          <TextField
+            autoFocus
+            required
+            margin="dense"
+            id="name"
+            name="email"
+            label="Task Details"
+            fullWidth
+            variant="standard"
+            value={dialogTodo.details}
+            onChange={(e) => {
+              setDialogTodo({ ...dialogTodo, details: e.target.value });
+            }}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleUpdateClose}>Cancel</Button>
+          <Button onClick={handleUpdateConfirm}>update Post</Button>
+        </DialogActions>
+      </Dialog>
+    </>
   );
 }
