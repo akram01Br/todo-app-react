@@ -9,7 +9,7 @@ import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { TodosContext } from "./contexts/todosContext";
 import MySnackBar from "./components/MySnackBar";
 
-import { ToastContext } from "./contexts/ToastContext";
+import { ToastProvider } from "./contexts/ToastContext";
 const theme = createTheme({
   typography: {
     fontFamily: ["Smooch"],
@@ -48,16 +48,9 @@ function App() {
   const [open, setOpen] = React.useState(false);
   const [message, setMessage] = React.useState();
 
-  function showHideToast(message) {
-    setOpen(true);
-    setMessage(message);
-    setTimeout(() => {
-      setOpen(false);
-    }, 2000);
-  }
   return (
     <ThemeProvider theme={theme}>
-      <ToastContext.Provider value={{ showHideToast }}>
+      <ToastProvider>
         <div
           className="App"
           style={{
@@ -73,7 +66,7 @@ function App() {
             <ToDoList />
           </TodosContext.Provider>
         </div>
-      </ToastContext.Provider>
+      </ToastProvider>
     </ThemeProvider>
   );
 }
