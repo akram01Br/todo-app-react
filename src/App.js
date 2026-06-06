@@ -9,6 +9,7 @@ import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { TodosContext } from "./contexts/todosContext";
 import MySnackBar from "./components/MySnackBar";
 
+import TodosProvider from "./contexts/todosContext";
 import { ToastProvider } from "./contexts/ToastContext";
 const theme = createTheme({
   typography: {
@@ -45,28 +46,25 @@ const initialTodos = [
 ];
 function App() {
   const [todos, setToDos] = useState(initialTodos);
-  const [open, setOpen] = React.useState(false);
-  const [message, setMessage] = React.useState();
 
   return (
     <ThemeProvider theme={theme}>
-      <ToastProvider>
-        <div
-          className="App"
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            background: "#191b1f",
-            height: "100vh",
-          }}
-        >
-          <MySnackBar open={open} message={message} />
-          <TodosContext.Provider value={{ todos, setToDos }}>
+      <TodosProvider>
+        <ToastProvider>
+          <div
+            className="App"
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              background: "#191b1f",
+              height: "100vh",
+            }}
+          >
             <ToDoList />
-          </TodosContext.Provider>
-        </div>
-      </ToastProvider>
+          </div>
+        </ToastProvider>
+      </TodosProvider>
     </ThemeProvider>
   );
 }

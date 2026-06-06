@@ -4,41 +4,24 @@ import CardActions from "@mui/material/CardActions";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import Grid from "@mui/material/Grid";
-import { useContext, useState } from "react";
-import { TodosContext } from "../contexts/todosContext";
+import { useTodosDispatch } from "../contexts/todosContext";
 import TextField from "@mui/material/TextField";
-import { ToastContext } from "../contexts/ToastContext";
+import { ToastContext, useToast } from "../contexts/ToastContext";
 
 // Icon Import
 import DeleteForeverOutlinedIcon from "@mui/icons-material/DeleteForeverOutlined";
 import CheckIcon from "@mui/icons-material/Check";
 import IconButton from "@mui/material/IconButton";
 import ModeEditOutlineOutlinedIcon from "@mui/icons-material/ModeEditOutlineOutlined";
-// DIALOG IMPORT
-import Dialog from "@mui/material/Dialog";
-import DialogActions from "@mui/material/DialogActions";
-import DialogContent from "@mui/material/DialogContent";
-import DialogContentText from "@mui/material/DialogContentText";
-import DialogTitle from "@mui/material/DialogTitle";
+
 
 export default function ToDo({ todo, handleCheck, showDelete, showUpdate }) {
 
-  const [updatedTodo, setUpdatedTodo] = useState({
-    title: todo.title,
-    details: todo.details,
-  });
-  const { todos, setToDos } = useContext(TodosContext);
-  const { showHideToast} = useContext(ToastContext)
+  const dispatch = useTodosDispatch();
+  const { showHideToast} = useToast();
   //  EVENT HANDLERS
   function handelCheckClick() {
-    const updatedTodos = todos.map((t) => {
-      if (t.id == todo.id) {
-        t.isCompleted = !t.isCompleted;
-      }
-      return t;
-    });
-    setToDos(updatedTodos);
-    localStorage.setItem("todos", JSON.stringify(updatedTodos));
+    dispatch({type:"toggledCompleted", payload: todo })
    if (todo.isCompleted) {
       showHideToast("Task completed 🎉", "success");
 

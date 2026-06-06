@@ -27,8 +27,7 @@ import { v4 as uuidv4 } from "uuid";
 import { useContext, useState, useEffect, useMemo, useReducer } from "react";
 
 import todosReducer from "../reducers/todosReducer";
-
-import { TodosContext } from "../contexts/todosContext";
+import { useTodos, useTodosDispatch ,TodosContext} from "../contexts/todosContext";
 import { ToastContext } from "../contexts/ToastContext";
 import Grid from "@mui/material/Grid";
 import TextField from "@mui/material/TextField";
@@ -42,11 +41,12 @@ export default function TodoList() {
   const [dialogTodo, setDialogTodo] = useState("");
   const [titleInput, setTitleInput] = useState("");
   const [displayedTodosType, setDisplayedTodosType] = useState("all");
-  const [todos, dispatch] = useReducer(todosReducer, []);
   const { showHideToast } = useContext(ToastContext);
 
   const [showupdateDialog, setShowUpdateDialog] = useState(false);
 
+  const todos = useTodos();
+  const dispatch = useTodosDispatch();
   // filteration arrays
 
   const completedTodos = useMemo(() => {
@@ -73,7 +73,7 @@ export default function TodoList() {
   }
 
   useEffect(() => {
-   dispatch({type:"get"})
+    dispatch({ type: "get" });
   }, []);
   //handelers
 
@@ -86,7 +86,7 @@ export default function TodoList() {
   }
 
   function handleUpdateConfirm() {
-   dispatch ({type: "updated", payload: dialogTodo})
+    dispatch({ type: "updated", payload: dialogTodo });
     setShowUpdateDialog(false);
     showHideToast("updated");
   }
@@ -112,7 +112,7 @@ export default function TodoList() {
     setDisplayedTodosType(e.target.value);
   }
   function handleDeleteConfirm() {
-    dispatch({type:"deleted", payload: dialogTodo})
+    dispatch({ type: "deleted", payload: dialogTodo });
     setShowDeleteDialog(false);
     showHideToast("Task deleted successfully");
   }
